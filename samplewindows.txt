@@ -1,0 +1,105 @@
+3. Terraform download
+&:sudo apt update
+
+&:sudo apt install -y software-properties-common
+
+&:wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+&:echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+&:sudo apt update
+
+&: sudo apt install -y terraform
+
+&: terraform -version
+
+
+5. Build change destroy:
+&: aws configure
+&: mkdir terraform-practical
+&: cd terraform-practical
+&: touch main.tf
+&: nano main.tf
+>>Code:
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+  required_version = ">= 0.14.9"
+}
+provider "aws" {
+  profile = "default"
+  region  = "ap-south-	1"
+}
+resource "aws_instance" "app_server" {
+  ami           = "ami-830c94e3"  # Original AMI, can be replaced as needed
+  instance_type = "t2.micro"
+  tags = {
+    Name = "ExampleAppServerInstance"
+  }
+}
+
+&: terraform init
+&: terraform fmt
+&: terraform validate
+&: terraform apply
+
+nano main.tf
+//new ami->cli->aws ec2 describe-images --region ap-south-1 --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*-x86_64-gp2" --query "Images | sort_by(@, &CreationDate)[-1].ImageId"
+
+ami = ami-08cfba77040c6f2a5
+
+&:terraform apply
+&:terraform destroy
+
+5. Nagios
+
+$: sudo apt install -y build-essential libgd-dev libssl-dev apache2 php libapache2-mod-php wget unzip
+
+$: sudo useradd nagios
+sudo groupadd nagcd
+sudo usermod -aG nagcmd nagios
+sudo usermod -aG nagcmd www-data
+
+$: cd /tmp
+$: wget httpsL//assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.10.tar.gz tar -xvf nagios-4.4.10.tar.gz
+$: cd nagios-4.4.10
+$: ./configure --with-command-group=nagcmd
+make all
+sudo make install
+sudo make install-config
+sudo make install-commandmod
+sudo make install-webconf
+cd ./base && make
+
+$: sudo systemctl enable apache2
+sudo systemctl start apache2
+sudo systemclt enable nagios
+sudo systemctl start nagios
+
+cd /tmp
+wget https://nagios-plugins.org/download/nagios-plugins-2.4.10.tar.gz tar -xvf nagios-plugins-2.4.10.tar.gz
+cd nagios-plugins-2.4.10
+./configure --with-nagios-user=nagios --with-nagios-group=nagios
+make
+sudo make install
+
+sudo apt install nagios-nrpe-server nagios-plugins
+sudo nano /etc/system/system/nrpe.service
+
+[Service]
+ExecStart=/usr/sbin/nrpe -c /etc/nagios/nrpe.cfg -f 
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart-on-failure
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+
+sudo nano /etc/nagios/nrpe.cfg
+sudo systemctl start nrpe.service
+sudo systemctl status nrpe.service
