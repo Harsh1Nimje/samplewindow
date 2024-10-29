@@ -48,7 +48,11 @@ resource "aws_instance" "app_server" {
 &: terraform apply
 
 nano main.tf
-//new ami->cli->aws ec2 describe-images --region ap-south-1 --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*-x86_64-gp2" --query "Images | sort_by(@, &CreationDate)[-1].ImageId"
+//new ami->
+cli->
+command 1: aws ec2 describe-images --region ap-south-1 --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*-x86_64-gp2" --query "Images | sort_by(@, &CreationDate)[-1].ImageId"
+
+command 2: aws ec2 describe-images --region ap-south-1 --owners amazon --filters "Name=name,Values=Windows_Server-2019-English-Full-Base-*" --query "Images | sort_by(@, &CreationDate)[-1].ImageId"
 
 ami = ami-08cfba77040c6f2a5
 
